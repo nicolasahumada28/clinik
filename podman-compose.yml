@@ -13,11 +13,13 @@ services:
 
   admin-postgresql:
     image: dpage/pgadmin4:8.4
+    container_name: pgadmin
+    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@pgadmin.org
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - '5050:5050'
+      - '5050:80'
     volumes:
       - admin-data:/var/lib/pgadmin
     depends_on:

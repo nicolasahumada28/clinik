@@ -98,7 +98,7 @@ classDiagram
 
 ```mermaid
 flowchart TB
-    subgraph API REST
+    subgraph APIREST
         PC[PacienteController]
         PR[ProfesionalController]
         CC[CitaController]
@@ -117,9 +117,11 @@ flowchart TB
         Doc[DocumentoExamenRepository]
         Deu[DeudaRepository]
         Pag[PagoRepository]
+        Usu[UsuarioRepository]
+        Rol[RolRepository]
     end
 
-    API REST --> Dominio
+  
     PC --> Pac
     PR --> Prof
     CC --> Cit
@@ -127,6 +129,8 @@ flowchart TB
     EC --> Doc
     DC --> Deu
     PC2 --> Pag
+    UC --> Usu
+    RC --> Rol
 ```
 
 ## 4. Diagrama de casos de uso
@@ -183,10 +187,10 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-    actor Paciente
-    participante API as CitaController
+    actor Paciente/Administrador
+    participant API as CitaController
     participant Repo as CitaRepository
-    participant DB as BaseDeDatos
+    participant DB as BD (PostgreSQL)
 
     Paciente->>API: POST /api/v1/citas
     API->>Repo: save(cita)

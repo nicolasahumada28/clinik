@@ -187,7 +187,7 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-    actor Paciente/Administrador
+    actor Paciente
     participant API as CitaController
     participant Repo as CitaRepository
     participant DB as BD (PostgreSQL)

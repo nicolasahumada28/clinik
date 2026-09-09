@@ -9,8 +9,10 @@ import com.timmynet.clinik.repository.CitaRepository;
 import com.timmynet.clinik.repository.PacienteRepository;
 import com.timmynet.clinik.repository.ProfesionalRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -50,14 +52,17 @@ public class CitaController {
 
     @PostMapping
     public ResponseEntity<Cita> schedule(@RequestBody Cita cita) {
-        Paciente paciente = null;
-        Profesional profesional = null;
-        if (cita.getPaciente() != null && cita.getPaciente().getId() != null) {
-            paciente = pacienteRepository.findById(cita.getPaciente().getId()).orElse(null);
+        if (cita.getPaciente() == null || cita.getPaciente().getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El paciente es obligatorio");
         }
-        if (cita.getProfesional() != null && cita.getProfesional().getId() != null) {
-            profesional = profesionalRepository.findById(cita.getProfesional().getId()).orElse(null);
+        if (cita.getProfesional() == null || cita.getProfesional().getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El profesional es obligatorio");
         }
+
+        Paciente paciente = pacienteRepository.findById(cita.getPaciente().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente no encontrado"));
+        Profesional profesional = profesionalRepository.findById(cita.getProfesional().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profesional no encontrado"));
         cita.setPaciente(paciente);
         cita.setProfesional(profesional);
         cita.setCreatedAt(LocalDateTime.now());
@@ -66,6 +71,24 @@ public class CitaController {
         }
         Cita saved = citaRepository.save(cita);
         return ResponseEntity.created(URI.create("/api/v1/citas/" + saved.getId())).body(saved);
+    }
+
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<Cita> cancel(@PathVariable Long id,
+                                       @RequestParam(required = false, defaultValue = "") String reason) {
+        return citaRepository.findById(id)
+            .map(cita -> {
+                if (cita.getEstadoCita() == com.timmynet.clinik.domain.EstadoCita.COMPLETADA
+                    || cita.getEstadoCita() == com.timmynet.clinik.domain.EstadoCita.NO_ASISTIO) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "No se puede cancelar una cita finalizada");
+                }
+                cita.setEstadoCita(com.timmynet.clinik.domain.EstadoCita.CANCELADA);
+                cita.setRazonCancelacion(reason.isBlank() ? null : reason.trim());
+                cita.setUpdatedAt(LocalDateTime.now());
+                return ResponseEntity.ok(citaRepository.save(cita));
+            })
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{id}/asistencia")

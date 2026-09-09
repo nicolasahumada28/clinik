@@ -45,6 +45,12 @@ curl -X POST http://localhost:8080/api/v1/citas \
 curl -X POST "http://localhost:8080/api/v1/citas/1/asistencia?attended=true"
 ```
 
+### Cancelar cita
+
+```bash
+curl -X PUT "http://localhost:8080/api/v1/citas/1/cancelar?reason=Paciente%20solicito%20cambio"
+```
+
 ### Agregar bitácora a cita
 
 ```bash

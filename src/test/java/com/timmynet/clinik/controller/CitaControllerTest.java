@@ -19,8 +19,10 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import org.springframework.web.server.ResponseStatusException;
 
 class CitaControllerTest {
 
@@ -119,5 +121,41 @@ class CitaControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getAsistio()).isTrue();
         assertThat(response.getBody().getEstadoCita()).isEqualTo(EstadoCita.COMPLETADA);
+    }
+
+    @Test
+    void shouldRejectScheduleWhenPacienteDoesNotExist() {
+        Cita cita = Cita.builder()
+            .tipoCita(TipoCita.CONSULTA)
+            .paciente(Paciente.builder().id(99L).build())
+            .profesional(Profesional.builder().id(2L).build())
+            .build();
+
+        Mockito.when(pacienteRepository.findById(eq(99L))).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> controller.schedule(cita))
+            .isInstanceOf(ResponseStatusException.class)
+            .extracting("statusCode.value")
+            .isEqualTo(404);
+        Mockito.verify(citaRepository, Mockito.never()).save(any(Cita.class));
+    }
+
+    @Test
+    void shouldCancelScheduledCitaWithReason() {
+        Cita cita = Cita.builder()
+            .id(1L)
+            .tipoCita(TipoCita.CONSULTA)
+            .estadoCita(EstadoCita.PROGRAMADA)
+            .build();
+
+        Mockito.when(citaRepository.findById(eq(1L))).thenReturn(Optional.of(cita));
+        Mockito.when(citaRepository.save(any(Cita.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ResponseEntity<Cita> response = controller.cancel(1L, "  Paciente solicito cambio  ");
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody().getEstadoCita()).isEqualTo(EstadoCita.CANCELADA);
+        assertThat(response.getBody().getRazonCancelacion()).isEqualTo("Paciente solicito cambio");
+        assertThat(response.getBody().getUpdatedAt()).isNotNull();
     }
 }

@@ -2,6 +2,9 @@ package com.timmynet.clinik.controller;
 
 import com.timmynet.clinik.domain.Deuda;
 import com.timmynet.clinik.domain.Paciente;
+import com.timmynet.clinik.dto.DeudaRequest;
+import com.timmynet.clinik.dto.DeudaResponse;
+import com.timmynet.clinik.dto.DtoMapper;
 import com.timmynet.clinik.repository.DeudaRepository;
 import com.timmynet.clinik.repository.PacienteRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,19 +24,20 @@ public class DeudaController {
     private final PacienteRepository pacienteRepository;
 
     @GetMapping
-    public ResponseEntity<List<Deuda>> getAll() {
-        return ResponseEntity.ok(deudaRepository.findAll());
+    public ResponseEntity<List<DeudaResponse>> getAll() {
+        return ResponseEntity.ok(deudaRepository.findAll().stream().map(DtoMapper::toResponse).toList());
     }
 
     @GetMapping("/pacientes/{pacienteId}")
-    public ResponseEntity<List<Deuda>> getByPaciente(@PathVariable Long pacienteId) {
-        return ResponseEntity.ok(deudaRepository.findByPacienteId(pacienteId));
+    public ResponseEntity<List<DeudaResponse>> getByPaciente(@PathVariable Long pacienteId) {
+        return ResponseEntity.ok(deudaRepository.findByPacienteId(pacienteId).stream().map(DtoMapper::toResponse).toList());
     }
 
     @PostMapping
-    public ResponseEntity<Deuda> create(@RequestBody Deuda deuda) {
-        if (deuda.getPaciente() != null && deuda.getPaciente().getId() != null) {
-            Paciente paciente = pacienteRepository.findById(deuda.getPaciente().getId()).orElse(null);
+    public ResponseEntity<DeudaResponse> create(@RequestBody DeudaRequest request) {
+        Deuda deuda = Deuda.builder().montoTotal(request.montoTotal()).balance(request.balance()).build();
+        if (request.pacienteId() != null) {
+            Paciente paciente = pacienteRepository.findById(request.pacienteId()).orElse(null);
             deuda.setPaciente(paciente);
         }
         deuda.setCreatedAt(LocalDateTime.now());
@@ -42,6 +46,6 @@ public class DeudaController {
         }
         deuda.setEstado("OPEN");
         Deuda saved = deudaRepository.save(deuda);
-        return ResponseEntity.created(URI.create("/api/v1/deudas/" + saved.getId())).body(saved);
+        return ResponseEntity.created(URI.create("/api/v1/deudas/" + saved.getId())).body(DtoMapper.toResponse(saved));
     }
 }

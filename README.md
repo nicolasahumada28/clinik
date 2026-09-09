@@ -1,6 +1,6 @@
 # Clinik
 
-Microservicio de gestión clínica construido con Spring Boot 4, Java 21, PostgreSQL, JPA y Swagger.
+Microservicio de gestión clínica construido con Spring Boot 3.5.6, Java 25 LTS, PostgreSQL, JPA y Swagger.
 
 ## Características
 
@@ -51,3 +51,5 @@ Arranca la aplicación y visita:
 
 - `INSTALLATION.md` — pasos de instalación y despliegue
 - `TEST_DATA.md` — datos de prueba y ejemplos con `curl`
+- [`DOCUMENTACION.md`](DOCUMENTACION.md) — índice general y diagramas iniciales
+- [`docs/README.md`](docs/README.md) — documentación técnica actualizada

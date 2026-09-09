@@ -3,6 +3,10 @@ package com.timmynet.clinik.controller;
 import com.timmynet.clinik.domain.Examen;
 import com.timmynet.clinik.domain.DocumentoExamen;
 import com.timmynet.clinik.domain.Cita;
+import com.timmynet.clinik.dto.DtoMapper;
+import com.timmynet.clinik.dto.DocumentoResponse;
+import com.timmynet.clinik.dto.ExamenRequest;
+import com.timmynet.clinik.dto.ExamenResponse;
 import com.timmynet.clinik.repository.CitaRepository;
 import com.timmynet.clinik.repository.DocumentoExamenRepository;
 import com.timmynet.clinik.repository.ExamenRepository;
@@ -28,23 +32,24 @@ public class ExamenController {
     private final DocumentoExamenRepository documentRepository;
 
     @GetMapping
-    public ResponseEntity<List<Examen>> getAll() {
-        return ResponseEntity.ok(examRepository.findAll());
+    public ResponseEntity<List<ExamenResponse>> getAll() {
+        return ResponseEntity.ok(examRepository.findAll().stream().map(DtoMapper::toResponse).toList());
     }
 
     @PostMapping
-    public ResponseEntity<Examen> create(@RequestBody Examen exam) {
-        if (exam.getCita() != null && exam.getCita().getId() != null) {
-            Cita appointment = citaRepository.findById(exam.getCita().getId()).orElse(null);
+    public ResponseEntity<ExamenResponse> create(@RequestBody ExamenRequest request) {
+        Examen exam = Examen.builder().nombre(request.nombre()).descripcion(request.descripcion()).build();
+        if (request.citaId() != null) {
+            Cita appointment = citaRepository.findById(request.citaId()).orElse(null);
             exam.setCita(appointment);
         }
         exam.setCreatedAt(LocalDateTime.now());
         Examen saved = examRepository.save(exam);
-        return ResponseEntity.created(URI.create("/api/v1/examenes/" + saved.getId())).body(saved);
+        return ResponseEntity.created(URI.create("/api/v1/examenes/" + saved.getId())).body(DtoMapper.toResponse(saved));
     }
 
     @PostMapping("/{id}/documentos")
-    public ResponseEntity<DocumentoExamen> uploadDocument(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<DocumentoResponse> uploadDocument(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
         return examRepository.findById(id)
             .map(exam -> {
                 try {
@@ -59,20 +64,20 @@ public class ExamenController {
                     DocumentoExamen saved = documentRepository.save(document);
                     HttpHeaders headers = new HttpHeaders();
                     headers.setLocation(URI.create("/api/v1/examenes/" + id + "/documentos/" + saved.getId()));
-                    return new ResponseEntity<DocumentoExamen>(saved, headers, HttpStatus.CREATED);
+                    return new ResponseEntity<DocumentoResponse>(DtoMapper.toResponse(saved), headers, HttpStatus.CREATED);
                 } catch (Exception ex) {
-                    return new ResponseEntity<DocumentoExamen>(HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<DocumentoResponse>(HttpStatus.BAD_REQUEST);
                 }
             })
-            .orElse(new ResponseEntity<DocumentoExamen>(HttpStatus.NOT_FOUND));
+            .orElse(new ResponseEntity<DocumentoResponse>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/{id}/documentos")
-    public ResponseEntity<List<DocumentoExamen>> listDocuments(@PathVariable Long id) {
+    public ResponseEntity<List<DocumentoResponse>> listDocuments(@PathVariable Long id) {
         if (!examRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(documentRepository.findByExamenId(id));
+        return ResponseEntity.ok(documentRepository.findByExamenId(id).stream().map(DtoMapper::toResponse).toList());
     }
 
     @GetMapping("/{examenId}/documentos/{documentoId}")

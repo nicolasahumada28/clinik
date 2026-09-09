@@ -1,7 +1,6 @@
-version: '3.9'
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_DB: clinikdb
       POSTGRES_USER: postgres
@@ -10,6 +9,11 @@ services:
       - '5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d clinikdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   clinik:
     build: .
@@ -19,8 +23,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/clinikdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      CLINIK_JWT_SECRET: ${CLINIK_JWT_SECRET:-VGhpc0lzQURldm9wZXJvbmx5U2VjcmV0S2V5Rm9yQ2xpbmlrMjAyNg==}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   db-data:

@@ -3,6 +3,7 @@ package com.timmynet.clinik.config;
 import com.timmynet.clinik.domain.*;
 import com.timmynet.clinik.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ public class DataInitializer {
     private final CitaRepository citaRepository;
     private final OrdenMedicaRepository ordenMedicaRepository;
     private final DeudaRepository deudaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public CommandLineRunner seedData() {
@@ -32,19 +34,19 @@ public class DataInitializer {
                 Rol accountant = rolRepository.save(Rol.builder().nombre("ACCOUNTANT").build());
                 usuarioRepository.save(Usuario.builder()
                     .username("admin")
-                    .password("admin123")
+                    .password(passwordEncoder.encode("admin123"))
                     .email("admin@clinik.local")
                     .rol(admin)
                     .build());
                 usuarioRepository.save(Usuario.builder()
                     .username("reception")
-                    .password("recep123")
+                    .password(passwordEncoder.encode("recep123"))
                     .email("reception@clinik.local")
                     .rol(staff)
                     .build());
                 usuarioRepository.save(Usuario.builder()
                     .username("billing")
-                    .password("billing123")
+                    .password(passwordEncoder.encode("billing123"))
                     .email("billing@clinik.local")
                     .rol(accountant)
                     .build());

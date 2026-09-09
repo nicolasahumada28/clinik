@@ -1,5 +1,17 @@
 # Documentación del proyecto Clinik
 
+> Esta pagina conserva la documentacion funcional inicial. La referencia tecnica actualizada, basada directamente en las clases y pruebas del codigo, esta en [docs/README.md](docs/README.md).
+
+## Indice tecnico
+
+- [Catalogo de clases y estructuras](docs/clases.md)
+- [API REST implementada](docs/api-rest.md)
+- [Casos de prueba](docs/pruebas.md)
+- [Diagramas tecnicos](docs/diagramas.md)
+- [Seguridad](docs/seguridad.md)
+- [Modelo de datos](docs/modelo-datos.md)
+- [Roadmap](docs/roadmap.md)
+
 ## 1. Visión general
 
 Clinik es un microservicio REST de gestión clínica con nombres y rutas en español.

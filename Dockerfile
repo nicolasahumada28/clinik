@@ -1,5 +1,5 @@
 # ===== FASE DE BUILD =====
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:25-jdk-alpine AS build
 
 WORKDIR /workspace
 
@@ -20,7 +20,7 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests -B
 
 # ===== FASE DE RUNTIME =====
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 WORKDIR /app
 

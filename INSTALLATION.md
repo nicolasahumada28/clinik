@@ -2,10 +2,18 @@
 
 ## Requisitos
 
-- Java 21
+- Java 25 (LTS)
 - Maven
 - PostgreSQL
 - Podman o Docker
+
+Verifica la versión instalada antes de ejecutar el proyecto:
+
+```bash
+java -version
+```
+
+La salida debe indicar Java 25. El proyecto configura este requisito en `pom.xml` mediante `java.version` y `maven.compiler.release`.
 
 ## Base de datos PostgreSQL
 

@@ -3,6 +3,8 @@ package com.timmynet.clinik.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,6 +18,8 @@ public class OpenApiConfig {
                 .title("Clinik Microservicio API")
                 .description("API REST de gestión clínica para usuarios, pacientes, profesionales, citas, exámenes, órdenes y facturación.")
                 .version("v1")
-                .contact(new Contact().name("Equipo Clinik").email("soporte@clinik.local")));
+                .contact(new Contact().name("Equipo Clinik").email("soporte@clinik.local")))
+            .components(new Components().addSecuritySchemes("bearerAuth",
+                new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }
 }

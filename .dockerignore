@@ -1,0 +1,9 @@
+target/
+.git/
+.github/
+.idea/
+.vscode/
+*.md
+docker-compose.yml
+podman-compose.yml
+Dockerfile
